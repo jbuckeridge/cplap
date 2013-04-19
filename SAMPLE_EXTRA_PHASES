@@ -1,0 +1,13 @@
+#
+# cp SAMPLE_EXTRA_PHASES extra_phases.dat
+# then run a restart, selecting option (b)
+#
+# Give the number of additional competing phases to be considered:
+#
+1
+#
+# For each competing phase first give the number of species, then
+# the formula of the compound
+#
+3
+2 Ba 1 Sn 4 O -17.1252705

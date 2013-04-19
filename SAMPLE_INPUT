@@ -1,0 +1,51 @@
+# To run this calculation (for the system BaSnO3) do:
+#
+# cp SAMPLE_INPUT input.dat 
+# ./CPLAP
+#
+# One competing phase has been left out - to add it in:
+#
+# cp results.dat restart.dat
+# ./CPLAP
+#
+# and select option (b) (cp SAMPLE_EXTRA_PHASES extra_phases.dat first)
+#
+#
+# First give number of species in the compound of interest
+#
+3
+#
+# Next give the formula and enthalpy of formation (E1) of the compound 
+# in the format:
+#
+# n_A A n_B B n_C C ... E1
+#
+# where n_A is the number of species A in the formula unit etc (E1 
+# is a negative number)
+# (e.g. if the material is calcite then 1 Ca 1 C 3 O and then the 
+# energy must be entered. Please keep the energy units consistent 
+# when entering all data)
+#
+1 Ba 1 Sn 3 O -11.464253
+#
+# Now enter which element is to be set as the dependent variable (i.e.
+# given in terms of the other chemical potentials). If none is to be set,
+# then write "none" (case sensitive) - note if no dependent variable is
+# set then only the intersection points with the compound of interest 
+# are relevant
+#
+O
+#
+# Next give the number of competing phases to be considered:
+#
+3
+#
+# For each competing phase first give the number of species, then
+# the formula of the compound
+#
+2
+1 Ba 1 O -5.1386635
+2
+1 Sn 1 O -2.539629
+2
+1 Sn 2 O -5.2876295

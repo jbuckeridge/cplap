@@ -1,0 +1,124 @@
+_____________________________________________________________
+                                                             
+     CCCC     PPPPP     LL         AAAA      PPPPP     !!    
+    CC  CC    PP  PP    LL        AA  AA     PP  PP    !!    
+    CC        PP  PP    LL        AA  AA     PP  PP    !!    
+    CC        PPPPP     LL        AAAAAA     PPPPP     !!    
+    CC  CC    PP        LL        AA  AA     PP              
+     CCCC     PP        LLLLLL    AA  AA     PP        !!    
+_____________________________________________________________
+                                                             
+         Chemical Potential Limits Analysis Program          
+_____________________________________________________________
+                                                             
+  Version 1.1 2013                                           
+  John Buckeridge (j.buckeridge@ucl.ac.uk)                   
+_____________________________________________________________
+
+CPLAP is a program designed to determine the thermodynamical
+stability of a material, and, if it is stable, to determine
+the ranges of the constituent elements' chemical potentials
+for which growth of the material will grow, in comparison with
+competing phases and the elemental forms.
+
+Before running CPLAP, the energies of the material and all its 
+competing phases (search the chemical database extensively for
+this) must be calculated. Use the same level theory for every
+calculation, and use the same units when inputting to CPLAP.
+
+The chemical potentials are defined with respect to the 
+energy of the species in their elemental form. So the zero of
+chemical potential for a species is the energy per atom of 
+that species in its elemental form.
+
+**************************************************************
+
+COMPILATION
+
+Just type 'make'.
+
+You can set your preferred fortran compiler by changing the 
+'FC' variable in the Makefile.
+
+**************************************************************
+INPUT
+
+Input consists of the number of elements, their names and sto-
+ichiometry, and the energy of the compound of interest, and 
+all the competing phases. Input can be read from an input file
+(called input.dat - there is an example file provided, copy
+SAMPLE_INPUT to input.dat to try it out) or can
+be entered interactively. The name of the element whose chemi-
+cal potential is to be set as the dependent variable must be 
+inputted also.
+
+The format for entering a compound is -
+N
+n_a A n_b B n_c C ... E1
+
+where N is the total number of elements, n_a is the number of 
+type A elements etc., and E1 is the energy.
+
+Beware - it is possible to not set a dependent variable. If 
+this is the case, the code will still run. However, only the
+intersection points with the compound of interest itself are 
+actual solutions. It is advisable to always set a dependent 
+variable.
+
+**************************************************************
+
+OUTPUT
+
+Output is found in the file results.dat. The limiting inequal-
+ities that apply to the system are given first. Then (if the
+system is stable) the intersection points (including the value
+of the dependent variable at each point) are given. These con-
+sist of the corner points of the stability region in the che-
+mical potential space. Next is given a list of each competing
+phase, giving its corresponding equation in terms of the inde-
+pendent variables, and the intersection points relevant to 
+that phase. The compound of interest itself is given last.
+
+The user will be asked whether they want a grid of points in 
+the stability region printed. If so, they must enter the dens-
+ity of the grid (in terms of the chemical potential values).
+
+If the system is 2D or 3D, a file 2Dplot.dat (or 3Dplot.dat) 
+will be created. The contents of this file may be pasted in-
+to a Mathematica notebook, where the stability region in the 
+chemical potential space can be visualised. A file 2Dplot.plt
+(or 3Dplot.plt) will also be produced, which can be loaded
+directly into gnuplot.
+
+For binary systems, the line segment that corresponds to the 
+stability region in the 1D chemical potential space is given. 
+The equation governing the constraint on the two chemical po-
+tentials is also given, so that the value of the dependent 
+variable can be worked out easily.
+
+**************************************************************
+
+RESTART
+
+It is possible to restart from a previous run. To do this, 
+copy result.dat to restart.dat and re-run. There are 3 options
+available on restart - 
+
+(a) Change the dependent variable
+(b) Add more competing phases
+(c) Set a chemical potential to a particular value
+
+Option (a) is self-explanatory. For option (b), the additional
+competing phases can be inputted via a file extra_phases.dat,
+which uses the same format for data input as input.dat (there
+is an example provided - just copy SAMPLE_EXTRA_PHASES to 
+extra_phases.dat), or interactively (if extra_phases.dat
+does not exist). Option (c) is not available if the system is
+binary - this is because the solution is trivial. Just use the
+equation governing the constraint in the results.dat file.
+
+**************************************************************
+
+Any bugs or problems - please email j.buckeridge@ucl.ac.uk
+
+**************************************************************
