@@ -18,8 +18,8 @@ _____________________________________________________________
 CPLAP is a program designed to determine the thermodynamical
 stability of a material, and, if it is stable, to determine
 the ranges of the constituent elements' chemical potentials
-for which growth of the material will grow, in comparison with
-competing phases and the elemental forms.
+within which it is stable, in comparison with competing phases 
+and the elemental forms.
 
 Before running CPLAP, the energies of the material and all its 
 competing phases (search the chemical database extensively for
@@ -88,7 +88,10 @@ will be created. The contents of this file may be pasted in-
 to a Mathematica notebook, where the stability region in the 
 chemical potential space can be visualised. A file 2Dplot.plt
 (or 3Dplot.plt) will also be produced, which can be loaded
-directly into gnuplot.
+directly into gnuplot. Finally, for 2D systems, a file 
+2Dplot.txt is created which contains line points so that the
+lines corresponding to compounds can be plotted using 
+whichever plotting software is preferred.
 
 For binary systems, the line segment that corresponds to the 
 stability region in the 1D chemical potential space is given. 

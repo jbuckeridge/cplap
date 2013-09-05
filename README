@@ -1,0 +1,68 @@
+********************************************************************************
+
+Files contained in the package:
+
+1. Makefile - file to compile the program
+2. CPLAP.f90 - CPLAP source code
+3. MANUAL.txt - user manual
+4. SAMPLE_INPUT - example of input file
+5. SAMPLE_RESULTS - matching output file to SAMPLE_INPUT
+6. SAMPLE_GRID_0.1 - grid output when a density of 0.1 is chosen
+7. SAMPLE_EXTRA_PHASES - example of input file for option 'b' on restart
+8. SAMPLE_RESTART_RESULTS - matching output file to option 'b' restart run using
+                            SAMPLE_EXTRA_PHASES as input 
+
+********************************************************************************
+
+Installation:
+
+1. Edit Makefile to change variable 'FC' to your preferred fortran compiler.
+2. Type 'make'.
+
+********************************************************************************
+
+Running CPLAP:
+
+Run the executable (type './CPLAP'). There is a sample input:
+
+1. cp SAMPLE_INPUT input.dat
+2. ./CPLAP
+
+See MANUAL.txt for the input format.
+(If CPLAP does not find the file 'input.dat', it begins the interactive mode).
+
+There is an option to print a grid of points contained within the stability 
+region with a user-specified density - see MANUAL.txt for details.
+
+The output 'results.dat' should match 'SAMPLE_RESULTS'. There will also be plot
+files produced on output (see MANUAL.txt).
+
+There is an option to print a grid of points in the stability region, given a 
+grid density (see MANUAL.txt). If a grid density of 0.1 is chosen, the file
+'grid.dat' should match 'SAMPLE_GRID_0.1'.
+
+********************************************************************************
+
+Restarting CPLAP:
+
+CPLAP can be restarted from a previous run - see MANUAL.txt for details. To
+restart CPLAP:
+
+1. cp results.dat restart.dat
+2. ./CPLAP
+
+There are 3 options on restarting - for option (b), additional data can be 
+supplied via an input file called 'extra_phases.dat' - there is a sample file
+'SAMPLE_EXTRA_PHASES'
+
+To test this:
+1. cp results.dat restart.dat
+2. cp SAMPLE_EXTRA_PHASES extra_phases.dat
+3. ./CPLAP
+4. select option 'b'
+
+The output is modified appropriately (there will be a 2D plot produced that 
+differs from the one produced on the initial run). The output 'results.dat' 
+should match the file 'SAMPLE_RESTART_RESULTS'.
+
+********************************************************************************

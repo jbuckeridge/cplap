@@ -2519,6 +2519,53 @@ program cplap
      write(*,*)
      write(*,'(a)') "...done -> 2Dplot.plt can be loaded in gnuplot"
      write(*,'(a)') "        -> 2Dplot.dat can be pasted into Mathematica"
+!
+! Now write data to plot individual lines associated with the compounds to a .txt file, giving
+! each compound separately, with two points defining the line. If a compound's line is parallel
+! to the x or y axis, the line is defined according to the endpoints on the axes for the 
+! compound of interest
+!
+     open(unit=17,status='replace',file="2Dplot.txt")
+     write(17,'(a)') "#"//trim(compounds(1))
+     write(17,'(2(f9.4,2x))') 0.d0, eqns(1,nspecies_dep+1)/eqns(1,2)
+     write(17,'(2(f9.4,2x))') eqns(1,nspecies_dep+1)/eqns(1,1), 0.d0
+     do i=2,nlimits+1
+        write(17,*)
+        write(17,'(a)') "#"//trim(compounds(i))
+        if(eqns(i,1) == 0.d0) then
+           write(17,'(2(f9.4,2x))') 0.d0, eqns(i,nspecies_dep+1)/eqns(i,2)
+           write(17,'(2(f9.4,2x))') eqns(1,nspecies_dep+1)/eqns(1,1), &
+                &eqns(i,nspecies_dep+1)/eqns(i,2)
+        elseif(eqns(i,2) == 0.d0) then
+           write(17,'(2(f9.4,2x))') eqns(i,nspecies_dep+1)/eqns(i,1), &
+                &eqns(1,nspecies_dep+1)/eqns(1,2)
+           write(17,'(2(f9.4,2x))') eqns(i,nspecies_dep+1)/eqns(i,1), 0.d0
+        else
+           if(eqns(i,nspecies_dep+1)/eqns(i,2) > 0.d0) then
+              write(17,'(2(f9.4,2x))') eqns(1,nspecies_dep+1)/eqns(1,1), &
+                   &eqns(i,nspecies_dep+1)/eqns(i,2) + -eqns(1,nspecies_dep+1)/eqns(1,1)&
+                   &* eqns(i,1)/eqns(i,2)
+           else
+              write(17,'(2(f9.4,2x))') 0.d0, eqns(i,nspecies_dep+1)/eqns(i,2)
+           endif
+           if(eqns(i,nspecies_dep+1)/eqns(i,1) > 0.d0) then
+              write(17,'(2(f9.4,2x))') (-eqns(1,nspecies_dep+1)/eqns(1,2) + &
+                   &eqns(i,nspecies_dep+1)/eqns(i,2)) * eqns(i,2)/eqns(i,1), &
+                   &eqns(1,nspecies_dep+1)/eqns(1,2)
+           else
+              write(17,'(2(f9.4,2x))') eqns(i,nspecies_dep+1)/eqns(i,1), 0.d0
+           endif
+        endif
+     enddo
+!
+! Finish
+!
+     close(unit=17)
+     write(*,*)
+     write(*,'(a)') "...done -> 2Dplot.plt can be loaded in gnuplot"
+     write(*,'(a)') "        -> 2Dplot.dat can be pasted into Mathematica"
+     write(*,'(a)') "        -> 2Dplot.txt contains points to plot lines"
+!
   else
      continue
   endif
