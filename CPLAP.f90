@@ -56,6 +56,22 @@ program cplap
 !
 ! J. Buckeridge October 2011
 !
+! HACK - 10/03/2016: Check if solutions found are compatible with the
+!        limiting inequalities has been moved to subroutine 
+!        all_eqns_solve. Having it there avoids allocating very large 
+!        arrays. A check has also been added a the program stops if too
+!        much memory is used (i.e. if array 'results' has more than
+!        nmax*nmax rows)
+!
+! BUGFIX - 29/10/2025: Problems identified with the restart (c) option,
+!        where, if the reduced system is binary, there was an error in
+!        some of the energies outputted. Fixed by subtracting the fixed
+!        chemical potential value from the total energy. Also, minor 
+!        problem with the neqns has been fixed, so that the correct lim-
+!        iting inequalities are written. A test is required too to get
+!        the correct energies for the inequalities related to the pure
+!        elements.
+!
 !*********************************************************************
 !
   implicit none
@@ -68,10 +84,10 @@ program cplap
   integer i, j, k, l, n, nspecies, nlimits, restart, num(nmax), nadd, nspecies_dep
   integer limittotno(nmax), limitnum(nmax,nmax), ndepend, neqns, numtmp
   integer numres, numsol, values(8), fixnum, str_num, comp_array(nmax), depnum
-  integer input, extra
+  integer input, extra, memtest
   integer nrel, func1, func2, rel_array(nmax), z_zero, cnt_z(nmax)
   real*8 mu(nmax), energy, limite(nmax), eqns(nmax,nmax)
-  real*8 intersect(nmax*nmax,nmax), results(nmax,nmax), sum1, sum2, sum3, sum4
+  real*8 results(nmax*nmax,nmax), sum1, sum2, sum3, sum4
   real*8 tmp1, tmp2
   real*8 mumax(nmax), mumin(nmax), grid, gridpt(nmax), fixe
   real*8 bintemp, Ebin_min, Ebin_max, enertemp
@@ -1245,9 +1261,21 @@ program cplap
 !
 ! Re-stack eqns matrix as now one of the chemical potentials has a fixed value
 !
-        neqns = nlimits + 2*nspecies_dep
+! BUGFIX 29/10/2025: "+ 1" was missing from the following line. Needed to get the last 
+! limiting inequality printed
+!
+        neqns = nlimits + 2*nspecies_dep + 1
         do i=1,neqns
-           eqns(i,nspecies_dep+1) = eqns(i,nspecies_dep+1) - eqns(i,fixnum) * fixe
+! 
+! BUGFIX 29/10/2025: Added if statement for cases where we are looking at inequalities
+! involving the pure elements. In these cases, the "eqns(i,fixnum)" is zero, but the energy
+! still needs to be changed by the fixed chemical potential
+!
+           if (i > nlimits + nspecies + 1) then 
+              eqns(i,nspecies_dep+1) = eqns(i,nspecies_dep+1) - num(fixnum) * fixe
+           else         
+              eqns(i,nspecies_dep+1) = eqns(i,nspecies_dep+1) - eqns(i,fixnum) * fixe
+           endif
         enddo
         do i=fixnum,nspecies_dep
            eqns(:,i) = eqns(:,i+1)
@@ -1260,6 +1288,12 @@ program cplap
         enddo
 !
 ! Arrays 'name' and 'num' must also be changed
+!
+! BUGFIX 29/10/2025: energy needs to have the fixed chemical potential value subtracted from it
+! (of course, multiplied by the appropriate factor, the number related to the fixed chemical potential 
+! element)
+!
+        energy = energy - num(fixnum) * fixe
 !
         do i=fixnum,nspecies_dep
            num(i) = num(i+1)
@@ -1466,53 +1500,9 @@ program cplap
 ! Call routine to solve all combinations of linear equations for systems with more 
 ! than two elements
 !
-  numres = 0
-  call all_eqns_solve(eqns(1:neqns,1:nspecies_dep + 1),neqns,nspecies_dep + 1,intersect&
-       &(:,1:nspecies_dep),numres)
-!
-! There are now numres solutions stored in the rows of intersect. If no solutions 
-! are found tell the user, and abort the calculation
-!
-  if(numres == 0) then
-     write(*,*)
-     write(*,'(a)') "ERROR: no solutions found for any system of linear equations"
-     write(*,'(a)') "formed from the data input!!"
-     write(*,*)
-     write(*,'(a)') "-> No intersection points between any hypersurfaces in chemical"
-     write(*,'(a)') "   potential space"
-     write(*,*)
-     goto 200
-  endif
-!
-! Check which solutions are compatible with the limiting inequalities. These will
-! be the corners of the polyhedron formed by the region of stability
-!
   numsol = 0
-  do i=1,numres
-     check2 = ltrue
-     do j=1,neqns
-        sum1 = 0.d0
-        do k=1,nspecies_dep
-           sum1 = sum1 + intersect(i,k) * eqns(j,k)
-        enddo
-        if(j == 1 .or. j > nlimits + nspecies_dep + 1) then
-           if(sum1 - eqns(j,nspecies_dep + 1) < -small) then
-              check2 = lfalse
-           endif
-        else
-           if(sum1 - eqns(j,nspecies_dep + 1) > small) then
-              check2 = lfalse
-           endif
-        endif
-     enddo
-!
-! Put compatible solutions in an array
-!
-     if(check2) then
-        numsol = numsol + 1
-        results(numsol,1:nspecies_dep) = intersect(i,1:nspecies_dep)
-     endif
-  enddo
+  call all_eqns_solve(eqns(1:neqns,1:nspecies_dep + 1),neqns,nspecies_dep + 1,&
+       &results(:,1:nspecies_dep),nlimits,numsol)
 !
 ! If no solutions are found tell the user
 !
@@ -2562,8 +2552,6 @@ program cplap
 !
      close(unit=17)
      write(*,*)
-     write(*,'(a)') "...done -> 2Dplot.plt can be loaded in gnuplot"
-     write(*,'(a)') "        -> 2Dplot.dat can be pasted into Mathematica"
      write(*,'(a)') "        -> 2Dplot.txt contains points to plot lines"
 !
   else
@@ -2597,7 +2585,7 @@ end program cplap
 !
 !
 !
-subroutine all_eqns_solve(eqns,dim1,dim2,results,numres)
+subroutine all_eqns_solve(eqns,dim1,dim2,results,nlim,numres)
 !
 ! This subroutine reads in an array 'eqns' containing a number dim1
 ! of linear equations, with dim2-1 unknowns in each equation. The 
@@ -2610,18 +2598,25 @@ subroutine all_eqns_solve(eqns,dim1,dim2,results,numres)
 !
 ! J. Buckeridge October 2011
 !
+! HACK - 10/03/2016: Added check to see if solution found is compatible with 
+!                    limiting inequalities. Previously this check was done
+!                    outside the subroutine, but putting it here saves space.
+!
   implicit none
 !
   integer, parameter :: nmax = 300
   real*8, parameter :: small = 1.d-12
 !
-  integer i, j, dim1, dim2, num, indx(nmax), ival(nmax)
+  integer i, j, k, dim1, dim2, num, indx(nmax), ival(nmax)
   integer, intent(inout) :: numres
+  integer, intent(inout) :: nlim
 !  real*8, intent(inout) :: eqns(:,:)
-!  real*8, intent(inout) :: results(:,:)
-  real*8 eqns(dim1,dim2), results(nmax*nmax,dim2)
+  !real*8, dimension(:,:), intent(inout) :: results
+  !real*8 eqns(dim1,dim2), results(nmax*nmax,dim2)
+  real*8 eqns(dim1,dim2), sum1, results(nmax*nmax,dim2)
   real*8 system(size(eqns,2),size(eqns,2)), vector(size(eqns,2)), d
-  logical check1
+  logical check1, checksol1, checksol2
+  character*20 string
 !
 ! Set num equal to the dimensions of the linear system to be solved (i.e. 
 ! equal to dim2 - 1)
@@ -2657,7 +2652,10 @@ subroutine all_eqns_solve(eqns,dim1,dim2,results,numres)
   enddo
 !
 ! Call numerical recipes routine to get LU decomposition. If this fails
-! then there is no solution for this system of equations
+! then there is no solution for this system of equations.
+!
+! If solution is found, check its compatibility with the limiting inequalities
+! Write solutions to scratch file to save dynamical memory
 !
   check1 = .true.
   call ludcmp(system(1:num,1:num),indx(1:num),d,num,check1)
@@ -2666,8 +2664,30 @@ subroutine all_eqns_solve(eqns,dim1,dim2,results,numres)
      if(any(vector >= (1.d0/small))) then
         goto 102
      else
-        numres = numres + 1
-        results(numres,1:num) = vector(1:num)
+        checksol1 = .true.
+        do j=1,dim1
+           sum1 = 0.d0
+           do k=1,num
+              sum1 = sum1 + vector(k) * eqns(j,k)
+           enddo
+           if(j == 1 .or. j > nlim + num + 1) then
+              if(sum1 - eqns(j,dim2) < -small) then
+                 checksol1 = .false.
+              endif
+           else
+              if(sum1 - eqns(j,dim2) > small) then
+                 checksol1 = .false.
+              endif
+           endif
+        enddo
+        if(checksol1) then
+           numres = numres + 1
+           if(numres > nmax*nmax) then
+              write(*,'(a)') "*** sorry, too much memory used ***"
+              stop
+           endif
+           results(numres,1:num) = vector(1:num)
+        endif
      endif
   endif
 102 continue

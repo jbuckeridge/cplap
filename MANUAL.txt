@@ -122,6 +122,6 @@ equation governing the constraint in the results.dat file.
 
 **************************************************************
 
-Any bugs or problems - please email j.buckeridge@ucl.ac.uk
+Any bugs or problems - please email j.buckeridge@lsbu.ac.uk
 
 **************************************************************

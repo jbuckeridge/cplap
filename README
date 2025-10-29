@@ -75,3 +75,16 @@ Adam Jackson has written an excellent python script to do so. See:
 
 https://github.com/ajjackson/mctools/
 
+********************************************************************************
+BUGFIX (29/10/25):
+
+For restart with option (c), setting a value for a particular chemical potential,
+there was a bug in some energies outputted, if the reduced system ended up as a
+binary system. That has now been rectified. There was a minor bug, also for (c)
+on restart, where the list of limiting inequalities missed out on one, and gave 
+the wrong most negative values for the inequalities involving only one element
+each. That has also been fixed. Note, these bugs should not have caused errors 
+in systems that were not reduced to binary, and even in the latter case, the 
+correct energies could have been easily identified, as the correct range was still
+found and outputted.
+
